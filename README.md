@@ -9,13 +9,11 @@ The paper studies the Goodreads Giveaways program, which began to charge authors
 ## Structure
 
 ```
-paper/     the published article (PDF)
+paper/     the published paper (PDF)
 data/      data from the authors' replication package
 code/      one R script per table, plus install_packages.R
 results/   one folder per table, each with a CSV and a Markdown table
 ```
-
-The variable names in `code/` follow the authors' data and code, for example `treated`, `after` and `cleanPublisherAfter` in Table 2. Each script states its regression equation in a comment above the model.
 
 ## Data
 
@@ -39,10 +37,8 @@ The scripts were run with R 4.5.3, data.table 1.18.2.1, lfe 3.1.1 and R.utils 2.
 | `code/replication_table3.R` | `results/replication_table3/` | Table 3 |
 | `code/replication_table4.R` | `results/replication_table4/` | Table 4, review-volume column |
 
-All coefficients, standard errors and numbers of observations match the published tables. The rating column of Table 4 is not replicated because the replication package does not include the ratings data.
-
 ## License
 
 The code is under the MIT License in `LICENSE`. The data belong to the original authors and are not covered by this license.
 
-The article in `paper/` is "Management Science. Copyright © 2025 The Author(s). https://doi.org/10.1287/mnsc.2023.01390, used under a Creative Commons Attribution License: https://creativecommons.org/licenses/by-sa/4.0/."
+The paper in `paper/` is "Management Science. Copyright © 2025 The Author(s). https://doi.org/10.1287/mnsc.2023.01390, used under a Creative Commons Attribution License: https://creativecommons.org/licenses/by-sa/4.0/."
