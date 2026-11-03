@@ -6,3 +6,6 @@
 
 # macOS
 .DS_Store
+
+# Knitted R Markdown output (the tables are saved in results/)
+code/*.html

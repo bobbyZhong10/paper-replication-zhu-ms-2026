@@ -1,30 +1,61 @@
-# Replication of Table 3 in Zhu, Shi and Banerjee (2025):
-# monthly genre shares of giveaway books before and after the January 2018 fee.
-# Open paper-replication-zhu-ms-2026.Rproj first, so that paths start at the repository root.
+---
+title: "Replication of Table 3"
+subtitle: "Zhu, Shi and Banerjee (2025), Management Science"
+output: html_document
+---
 
+This document replicates Table 3: monthly genre shares of giveaway books before and after the January 2018 fee. Knit it from RStudio or run `rmarkdown::render("code/replication_table3.Rmd")` in the repository root. The setup chunk sets the working directory of all chunks to the repository root, so the paths below start there.
+
+```{r setup, message = FALSE}
+knitr::opts_knit$set(root.dir = "..")
 library(data.table)
 library(lfe)
+```
 
+## Data
+
+```{r data}
 genre <- fread("data/genre/giveaway_genre_proportion_long.csv")
+```
 
-# post2 = 1 from April 2018 and 0 before 2018; January to March 2018 are dropped
+`post2` is 1 from April 2018 and 0 before 2018; January to March 2018 are dropped.
+
+```{r post}
 genre[, post2 := fcase(giveaway_year_month >= "2018-04", 1,
                        giveaway_year_month <= "2017-12", 0)]
+```
 
-# Popular genres are in the top quartile of the pre-fee share, niche genres in the bottom quartile
+Popular genres are in the top quartile of the pre-fee share, niche genres in the bottom quartile.
+
+```{r quartiles}
 genre[, above_q75 := as.numeric(above_q75)]
 genre[, below_q25 := as.numeric(!above_q25)]
+```
 
-# Outcome (2): share relative to the genre's mean share before the fee
+Outcome (2): share relative to the genre's mean share before the fee.
+
+```{r normalized}
 genre[, proportion_normalized := proportion / mean_pre_proportion]
+```
 
-# proportion_gt = b1 * post2_t * above_q75_g + b2 * post2_t * below_q25_g + a_g + m_month + e_gt
-# Middle genres are the reference group. Standard errors are clustered by calendar month.
-# felm syntax: y ~ regressors | fixed effects | instruments (none) | cluster
+## Regressions
+
+$$
+\text{proportion}_{gt} = \beta_1 \, \text{post2}_t \times \text{above\_q75}_g + \beta_2 \, \text{post2}_t \times \text{below\_q25}_g + \alpha_g + \mu_{\text{month}} + \varepsilon_{gt}
+$$
+
+Middle genres are the reference group. Standard errors are clustered by calendar month. The `felm` syntax is `y ~ regressors | fixed effects | instruments (none) | cluster`.
+
+```{r models}
 m1 <- felm(proportion ~ post2:above_q75 + post2:below_q25 | genre + month | 0 | month, data = genre)
 m2 <- felm(proportion_normalized ~ post2:above_q75 + post2:below_q25 | genre + month | 0 | month, data = genre)
+```
 
-# Save results
+## Results
+
+The results are saved to `results/replication_table3/`.
+
+```{r save, results = "asis"}
 dir.create("results/replication_table3", recursive = TRUE, showWarnings = FALSE)
 c1 <- coef(summary(m1))
 c2 <- coef(summary(m2))
@@ -34,7 +65,7 @@ fwrite(rbind(data.table(model = "(1) Raw proportion", term = rownames(c1), c1, N
 
 a <- "post2:above_q75"
 b <- "post2:below_q25"
-writeLines(c(
+table3 <- c(
   "# Table 3: Impact on Genre Proportion",
   "",
   "| | (1) Raw proportion | (2) Percentage change |",
@@ -47,4 +78,7 @@ writeLines(c(
   sprintf("| R2 | %.3f | %.3f |", summary(m1)$r.squared, summary(m2)$r.squared),
   "",
   "Standard errors clustered by calendar month in parentheses."
-), "results/replication_table3/table3.md")
+)
+writeLines(table3, "results/replication_table3/table3.md")
+cat(sub("^# ", "### ", table3), sep = "\n")
+```

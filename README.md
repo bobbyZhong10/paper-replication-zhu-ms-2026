@@ -11,7 +11,7 @@ The paper studies the Goodreads Giveaways program, which began to charge authors
 ```
 paper/     the published paper (PDF)
 data/      data from the authors' replication package
-code/      one R script per table, plus install_packages.R
+code/      one R Markdown file per table, plus install_packages.R
 results/   one folder per table, each with a CSV and a Markdown table
 ```
 
@@ -22,20 +22,31 @@ All data come from the authors' replication package. It is part of the Supplemen
 ## How to run
 
 1. Open `paper-replication-zhu-ms-2026.Rproj` in RStudio. This sets the working directory to the repository root.
-2. Run `code/install_packages.R` once. It installs `data.table`, `lfe` and `R.utils` if they are missing.
-3. Open a script in `code/` and click Source. Each script runs on its own and writes its results to `results/`.
+2. Run `code/install_packages.R` once. It installs `data.table`, `lfe`, `R.utils` and `rmarkdown` if they are missing.
+3. Open an `.Rmd` file in `code/` and click Knit. Each document runs on its own, writes its results to `results/` and shows the table in an HTML report next to the `.Rmd` file. The setup chunk of each document sets the working directory to the repository root, so the chunks can also be run one by one.
 
-From a terminal, run `Rscript code/replication_table2.R` (and the same for Tables 3 and 4) in the repository root.
+From a terminal, run in the repository root:
 
-The scripts were run with R 4.5.3, data.table 1.18.2.1, lfe 3.1.1 and R.utils 2.13.0. Table 4 loads about 12.6 million rows and needs a few GB of memory.
+```
+Rscript code/install_packages.R
+Rscript -e 'rmarkdown::render("code/replication_table2.Rmd")'
+Rscript -e 'rmarkdown::render("code/replication_table3.Rmd")'
+Rscript -e 'rmarkdown::render("code/replication_table4.Rmd")'
+```
+
+Knitting needs pandoc. RStudio includes it; outside RStudio, install it from https://pandoc.org.
+
+The documents were knitted with R 4.6.1, data.table 1.18.6.1, lfe 3.1.1, R.utils 2.13.0, rmarkdown 2.32 and pandoc 3.12.1. Table 4 loads about 12.6 million rows and needs a few GB of memory.
 
 ## Results
 
-| Script | Output | Table |
+| Document | Output | Table |
 |---|---|---|
-| `code/replication_table2.R` | `results/replication_table2/` | Table 2 |
-| `code/replication_table3.R` | `results/replication_table3/` | Table 3 |
-| `code/replication_table4.R` | `results/replication_table4/` | Table 4, review-volume column |
+| `code/replication_table2.Rmd` | `results/replication_table2/` | Table 2 |
+| `code/replication_table3.Rmd` | `results/replication_table3/` | Table 3 |
+| `code/replication_table4.Rmd` | `results/replication_table4/` | Table 4, review-volume column |
+
+Knitting also writes an HTML report next to each `.Rmd` file, such as `code/replication_table2.html`. The reports are not tracked by git; the tables are saved in `results/`.
 
 ## License
 

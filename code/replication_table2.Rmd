@@ -1,19 +1,33 @@
-# Replication of Table 2 in Zhu, Shi and Banerjee (2025):
-# giveaways listed by publishers before and after the January 2018 fee.
-# Open paper-replication-zhu-ms-2026.Rproj first, so that paths start at the repository root.
+---
+title: "Replication of Table 2"
+subtitle: "Zhu, Shi and Banerjee (2025), Management Science"
+output: html_document
+---
 
+This document replicates Table 2: giveaways listed by publishers before and after the January 2018 fee. Knit it from RStudio or run `rmarkdown::render("code/replication_table2.Rmd")` in the repository root. The setup chunk sets the working directory of all chunks to the repository root, so the paths below start there.
+
+```{r setup, message = FALSE}
+knitr::opts_knit$set(root.dir = "..")
 library(data.table)
 library(lfe)
+```
 
-# Giveaways with the publisher and Big 5 status of each book
+## Data
+
+Giveaways with the publisher and Big 5 status of each book.
+
+```{r data}
 books <- fread("data/supply/book_3participation_supply_selfControl.csv.bz2",
                select = c("id", "cleanPublisher", "big5Publishing"))
 giveaways <- fread("data/supply/giveaways_3participation_supply_selfControl.csv",
                    select = c("book_id", "giveaway_year_month"))
 giveaways <- merge(giveaways, books, by.x = "book_id", by.y = "id")
 giveaways[, giveaway_year_month_date := as.Date(paste0(giveaway_year_month, "-01"))]
+```
 
-# Sample: publishers with a giveaway from 2016 on, observed monthly in 2015-2018
+Sample: publishers with a giveaway from 2016 on, observed monthly in 2015-2018.
+
+```{r panel}
 publishers <- unique(giveaways[giveaway_year_month_date >= as.Date("2016-01-01"), .(cleanPublisher, big5Publishing)])
 panel <- giveaways[cleanPublisher %in% publishers$cleanPublisher, .(ncount = .N),
                    by = .(cleanPublisher, giveaway_year_month_date)]
@@ -22,27 +36,43 @@ panel <- panel[CJ(cleanPublisher = unique(cleanPublisher), giveaway_year_month_d
 panel[is.na(ncount), ncount := 0]
 panel <- merge(panel, publishers, by = "cleanPublisher")
 panel[, month := format(giveaway_year_month_date, "%m")]
+```
 
-# Outcome (2): monthly giveaways relative to the publisher's total before the fee
+Outcome (2): monthly giveaways relative to the publisher's total before the fee.
+
+```{r proportion}
 panel[, nPre := sum(ncount[giveaway_year_month_date < as.Date("2018-01-01")]), by = cleanPublisher]
 panel[, proportion := ncount / nPre]
+```
 
-# treated: the 2017-2018 pair, which contains the fee ("Post Monetization" in the paper); 2015-2016 is the control pair
-# after: the second year of each pair (2016 and 2018)
+`treated` marks the 2017-2018 pair, which contains the fee ("Post Monetization" in the paper); 2015-2016 is the control pair. `after` marks the second year of each pair (2016 and 2018). `cleanPublisherAfter` is the publisher fixed effect within each pair.
+
+```{r treatment}
 panel[, treated := as.numeric(giveaway_year_month_date >= as.Date("2017-01-01"))]
 panel[, after := as.numeric(year(giveaway_year_month_date) %in% c(2016, 2018))]
-panel[, cleanPublisherAfter := paste(cleanPublisher, treated, sep = "_")]   # publisher fixed effect within each pair
+panel[, cleanPublisherAfter := paste(cleanPublisher, treated, sep = "_")]
+```
 
-# ncount_pt = b1 * treated_t * after_t + b2 * treated_t * after_t * big5Publishing_p + a_(p,pair) + m_month + e_pt
-# As in the paper, after enters only through the interactions.
-# To add it, append "+ after + after:big5Publishing" to the regressors.
-# felm syntax: y ~ regressors | fixed effects | instruments (none) | cluster
+## Regressions
+
+$$
+\text{ncount}_{pt} = \beta_1 \, \text{treated}_t \times \text{after}_t + \beta_2 \, \text{treated}_t \times \text{after}_t \times \text{big5Publishing}_p + \alpha_{p,\text{pair}} + \mu_{\text{month}} + \varepsilon_{pt}
+$$
+
+As in the paper, `after` enters only through the interactions. To add it, append `+ after + after:big5Publishing` to the regressors. The `felm` syntax is `y ~ regressors | fixed effects | instruments (none) | cluster`.
+
+```{r models}
 m1 <- felm(ncount ~ treated:after + treated:after:big5Publishing | month + cleanPublisherAfter | 0 | cleanPublisher,
            data = panel)
 m2 <- felm(proportion ~ treated:after + treated:after:big5Publishing | month + cleanPublisherAfter | 0 | cleanPublisher,
            data = panel[is.finite(proportion)])
+```
 
-# Save results
+## Results
+
+The results are saved to `results/replication_table2/`.
+
+```{r save, results = "asis"}
 dir.create("results/replication_table2", recursive = TRUE, showWarnings = FALSE)
 c1 <- coef(summary(m1))
 c2 <- coef(summary(m2))
@@ -52,7 +82,7 @@ fwrite(rbind(data.table(model = "(1) No. of Giveaways", term = rownames(c1), c1,
 
 a <- "treated:after"
 b <- "treated:after:big5Publishing"
-writeLines(c(
+table2 <- c(
   "# Table 2: Impact on Books Published by Different Types of Publishers",
   "",
   "| | (1) No. of Giveaways | (2) Proportion |",
@@ -65,4 +95,7 @@ writeLines(c(
   sprintf("| R2 | %.3f | %.3f |", summary(m1)$r.squared, summary(m2)$r.squared),
   "",
   "Standard errors clustered by publisher in parentheses."
-), "results/replication_table2/table2.md")
+)
+writeLines(table2, "results/replication_table2/table2.md")
+cat(sub("^# ", "### ", table2), sep = "\n")
+```
