@@ -1,10 +1,10 @@
 ---
-title: "Replication of Table 4 (review-volume column)"
+title: "Replication of Table 4 (review-volume columns 3 and 4)"
 subtitle: "Zhu, Shi and Banerjee (2025), Management Science"
 output: html_document
 ---
 
-This document replicates the review-volume column of Table 4: monthly ratings of a book after its giveaway, before and after the January 2018 fee. Knit it from RStudio or run `rmarkdown::render("code/replication_table4.Rmd")` in the repository root. The setup chunk sets the working directory of all chunks to the repository root, so the paths below start there.
+This document replicates the review-volume columns (3) and (4) of Table 4: monthly ratings of a book after its giveaway, before and after the January 2018 fee. Columns (1) and (2), on the average rating, are not replicated. Knit it from RStudio or run `rmarkdown::render("code/replication_table4.Rmd")` in the repository root. The setup chunk sets the working directory of all chunks to the repository root, so the paths below start there.
 
 The data have about 12.6 million rows and need a few GB of memory.
 
@@ -33,9 +33,11 @@ $$
 
 The `felm` syntax is `y ~ regressors | fixed effects | instruments (none) | cluster`.
 
+Column (3) has only `post_giveaway`; column (4) adds the interaction.
+
 ```{r models}
-m1 <- felm(N ~ post_giveaway + post_giveaway:post_mon | book_id + yearmon | 0 | book_id, data = reviews)
-m2 <- felm(N ~ post_giveaway | book_id + yearmon | 0 | book_id, data = reviews)
+m3 <- felm(N ~ post_giveaway | book_id + yearmon | 0 | book_id, data = reviews)
+m4 <- felm(N ~ post_giveaway + post_giveaway:post_mon | book_id + yearmon | 0 | book_id, data = reviews)
 ```
 
 ## Results
@@ -44,10 +46,10 @@ The results are saved to `results/replication_table4/`.
 
 ```{r save, results = "asis"}
 dir.create("results/replication_table4", recursive = TRUE, showWarnings = FALSE)
-c1 <- coef(summary(m1))
-c2 <- coef(summary(m2))
-fwrite(rbind(data.table(model = "(1)", term = rownames(c1), c1, N = m1$N, adj_R2 = summary(m1)$adj.r.squared),
-             data.table(model = "(2)", term = rownames(c2), c2, N = m2$N, adj_R2 = summary(m2)$adj.r.squared)),
+c3 <- coef(summary(m3))
+c4 <- coef(summary(m4))
+fwrite(rbind(data.table(model = "(3)", term = rownames(c3), c3, N = m3$N, adj_R2 = summary(m3)$adj.r.squared),
+             data.table(model = "(4)", term = rownames(c4), c4, N = m4$N, adj_R2 = summary(m4)$adj.r.squared)),
        "results/replication_table4/table4.csv")
 
 a <- "post_giveaway"
@@ -57,16 +59,16 @@ table4 <- c(
   "",
   "Dependent variable: number of ratings per book and month, 12 months before and after the giveaway.",
   "",
-  "| | (1) | (2) |",
+  "| | (3) | (4) |",
   "|:--|:-:|:-:|",
-  sprintf("| Post Giveaway | %.3f (%.3f) | %.3f (%.3f) |", c1[a, 1], c1[a, 2], c2[a, 1], c2[a, 2]),
-  sprintf("| Post Giveaway x Post Monetization | %.3f (%.3f) | |", c1[b, 1], c1[b, 2]),
+  sprintf("| Post Giveaway | %.3f (%.3f) | %.3f (%.3f) |", c3[a, 1], c3[a, 2], c4[a, 1], c4[a, 2]),
+  sprintf("| Post Giveaway x Post Monetization | | %.3f (%.3f) |", c4[b, 1], c4[b, 2]),
   sprintf("| Number of books | %s | %s |", format(uniqueN(reviews$book_id), big.mark = ","), format(uniqueN(reviews$book_id), big.mark = ",")),
   sprintf("| Mean rating count | %.2f | %.2f |", mean(reviews$N), mean(reviews$N)),
   "| Book fixed effects | Yes | Yes |",
   "| Year-month fixed effects | Yes | Yes |",
-  sprintf("| Observations | %s | %s |", format(m1$N, big.mark = ","), format(m2$N, big.mark = ",")),
-  sprintf("| Adjusted R2 | %.3f | %.3f |", summary(m1)$adj.r.squared, summary(m2)$adj.r.squared),
+  sprintf("| Observations | %s | %s |", format(m3$N, big.mark = ","), format(m4$N, big.mark = ",")),
+  sprintf("| Adjusted R2 | %.3f | %.3f |", summary(m3)$adj.r.squared, summary(m4)$adj.r.squared),
   "",
   "Standard errors clustered by book in parentheses."
 )

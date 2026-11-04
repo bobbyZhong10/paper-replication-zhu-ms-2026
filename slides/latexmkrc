@@ -1,0 +1,5 @@
+# latexmk settings for the slides. Run `latexmk` in this directory.
+# Build files go to the hidden folder .latex-build/; only main.pdf is left here.
+$pdf_mode = 1;
+$aux_dir = '.latex-build';
+@default_files = ('main.tex');

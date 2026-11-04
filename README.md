@@ -1,6 +1,6 @@
 # paper-replication-zhu-ms-2026
 
-This repository replicates Tables 2 and 3 and the review-volume column of Table 4 of:
+This repository replicates Tables 2 and 3 and the review-volume columns (3) and (4) of Table 4 of:
 
 Kai Zhu, Qiaoni Shi, Shrabastee Banerjee (2025) Monetizing Platforms: An Empirical Analysis of Supply and Demand Responses to Entry Costs in Two-Sided Markets. Management Science 72(3):2380-2397. https://doi.org/10.1287/mnsc.2023.01390
 
@@ -13,6 +13,7 @@ paper/     the published paper (PDF)
 data/      data from the authors' replication package
 code/      one R Markdown file per table, plus install_packages.R
 results/   one folder per table, each with a CSV and a Markdown table
+slides/    Beamer slides of the replication
 ```
 
 ## Data
@@ -44,7 +45,7 @@ The documents were knitted with R 4.6.1, data.table 1.18.6.1, lfe 3.1.1, R.utils
 |---|---|---|
 | `code/replication_table2.Rmd` | `results/replication_table2/` | Table 2 |
 | `code/replication_table3.Rmd` | `results/replication_table3/` | Table 3 |
-| `code/replication_table4.Rmd` | `results/replication_table4/` | Table 4, review-volume column |
+| `code/replication_table4.Rmd` | `results/replication_table4/` | Table 4, columns (3) and (4) |
 
 Knitting also writes an HTML report next to each `.Rmd` file, such as `code/replication_table2.html`. The reports are not tracked by git; the tables are saved in `results/`.
 

@@ -9,3 +9,6 @@
 
 # Knitted R Markdown output (the tables are saved in results/)
 code/*.html
+
+# LaTeX build files of the slides (latexmkrc puts them here; main.pdf is kept)
+slides/.latex-build/

@@ -1,0 +1,464 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{penn-template}[penn beamer reusable template]
+
+\RequirePackage{xcolor}
+\RequirePackage{tikz}
+\usetikzlibrary{calc}
+\RequirePackage{graphicx}
+% Unified Arial-like font stack:
+%   text  = helvet      (Helvetica clone, Arial-equivalent)
+%   math  = newtxsf     (sans-serif math glyphs to match)
+%   mono  = inconsolata (clean modern monospace that pairs with grotesque sans)
+% All sans → no visual jump between body, equation, and code.
+\RequirePackage[T1]{fontenc}
+\RequirePackage[scaled=0.92]{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\RequirePackage{newtxsf}
+\RequirePackage{inconsolata}
+\RequirePackage{mdframed}
+
+\mode<presentation>
+
+% ── Penn Brand Colors ──────────────────────────────────────────
+\definecolor{UniRed}{RGB}{169,5,51}
+\definecolor{UniWhite}{RGB}{255,255,255}
+\definecolor{UniBlue}{RGB}{0,71,133}
+\definecolor{UniBlack}{RGB}{0,0,0}
+\definecolor{BayBlue}{RGB}{128,163,194}
+\definecolor{HeritageRed}{RGB}{212,130,153}
+\definecolor{MarineGray}{RGB}{128,128,128}
+\definecolor{UniBlueLight}{RGB}{235,242,250}
+\definecolor{UniRedLight}{RGB}{252,237,241}
+\definecolor{SlateGray}{RGB}{245,246,248}
+\definecolor{DividerGray}{RGB}{218,222,228}
+\definecolor{TextDark}{RGB}{20,30,48}
+\definecolor{TextMid}{RGB}{60,72,92}        % darker than 90,100,120 → better on white in bright light
+\definecolor{TitleSecondary}{RGB}{205,215,232}  % light gray-blue → visible on UniBlue without using red
+
+% ── Typography ───────────────────────────────────────────────────
+\usefonttheme{professionalfonts}
+\setbeamerfont{title}{size=\LARGE,series=\bfseries}
+\setbeamerfont{subtitle}{size=\large,series=\mdseries}
+\setbeamerfont{author}{size=\normalsize,series=\mdseries}
+\setbeamerfont{institute}{size=\small}
+\setbeamerfont{date}{size=\small}
+\setbeamerfont{frametitle}{size=\large,series=\bfseries}
+\setbeamerfont{block title}{size=\small,series=\bfseries}
+\setbeamerfont{block body}{size=\small}
+\setbeamerfont{footline}{size=\tiny}
+
+% ── Colors ───────────────────────────────────────────────────────
+\setbeamercolor{normal text}{fg=TextDark,bg=white}
+\setbeamercolor{titlelike}{fg=TextDark}
+\setbeamercolor*{frametitle}{fg=TextDark,bg=white}
+\setbeamercolor*{title in head/foot}{fg=TextMid,bg=white}
+\setbeamercolor*{author in head/foot}{fg=TextMid,bg=white}
+\setbeamercolor*{date in head/foot}{fg=TextMid,bg=white}
+\setbeamercolor{block title}{bg=white,fg=UniBlue}
+\setbeamercolor{block title alerted}{bg=white,fg=UniRed}
+\setbeamercolor{block title example}{bg=white,fg=MarineGray}
+\setbeamercolor{block body}{bg=white,fg=TextDark}
+\setbeamercolor{block body alerted}{bg=white,fg=TextDark}
+\setbeamercolor{block body example}{bg=white,fg=TextDark}
+\setbeamercolor*{item}{fg=UniRed}
+\setbeamercolor*{subitem}{fg=UniBlue}
+\setbeamercolor{alerted text}{fg=UniRed}
+
+% Caption styling — label ("Table:" / "Figure:") in UniBlue bold to echo the
+% frametitle/footer brand colour; body text in TextDark.
+\setbeamercolor{caption name}{fg=UniBlue}
+\setbeamerfont{caption name}{series=\bfseries,size=\small}
+\setbeamercolor{caption}{fg=TextDark}
+\setbeamerfont{caption}{size=\small}
+\setbeamertemplate{caption label separator}{:\ }
+
+% Hyperref colours — keep clickable elements visible but on-brand.
+% Beamer auto-loads hyperref; we hook \AtBeginDocument to ensure our colours
+% win over any theme defaults.
+\AtBeginDocument{%
+  \hypersetup{%
+    colorlinks=true,
+    linkcolor=TextDark,    % internal links (sections, refs) — quiet
+    citecolor=UniBlue,     % \cite / \citet / \citep links
+    urlcolor=UniBlue,      % external URLs
+    filecolor=UniBlue%
+  }%
+}
+
+% ── Items (smaller, modern markers) ──────────────────────────────
+\setbeamertemplate{itemize item}{\color{UniRed}\raisebox{0.18ex}{\rule{0.55em}{0.55em}}}
+\setbeamertemplate{itemize subitem}{\color{UniBlue}\small\textbullet}
+\setbeamertemplate{itemize subsubitem}{\color{MarineGray}\scriptsize\textbullet}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{frametitle continuation}{}
+
+% ── Modern flat numbered items (no 3D red ball) ──────────────────
+\setbeamertemplate{enumerate item}{%
+  {\color{UniRed}\bfseries\insertenumlabel.}}
+\setbeamertemplate{enumerate subitem}{%
+  {\color{UniBlue}\insertenumlabel.\insertsubenumlabel}}
+\setbeamertemplate{enumerate subsubitem}{%
+  {\color{MarineGray}\insertenumlabel.\insertsubenumlabel.\insertsubsubenumlabel}}
+
+% ── TOC: flat number + section name ──────────────────────────────
+\setbeamertemplate{section in toc}{%
+  \leavevmode\leftskip=0pt%
+  \makebox[1.5em][l]{\color{UniRed}\bfseries\inserttocsectionnumber.}%
+  {\color{TextDark}\inserttocsection}\par
+  \vspace{0.22em}%
+}
+\setbeamertemplate{subsection in toc}{%
+  \leavevmode\leftskip=1.8em%
+  \makebox[1.6em][l]{\color{MarineGray}\inserttocsectionnumber.\inserttocsubsectionnumber}%
+  {\color{TextMid}\inserttocsubsection}\par
+  \vspace{0.10em}%
+}
+
+% ── Blocks (no fill, left-rule via mdframed) ─────────────────────
+\mdfdefinestyle{wbBlockBase}{%
+  topline=false, bottomline=false, rightline=false,
+  linewidth=2pt,
+  innertopmargin=0.20em,
+  innerbottommargin=0.30em,
+  innerleftmargin=0.42cm,
+  innerrightmargin=0.10cm,
+  skipabove=0.45em,
+  skipbelow=0.45em
+}
+
+\setbeamertemplate{block begin}{%
+  \begin{mdframed}[style=wbBlockBase,linecolor=UniBlue]%
+    {\usebeamerfont{block title}\color{UniBlue}\insertblocktitle\par}%
+    \vspace{0.18em}%
+    \usebeamerfont{block body}\color{TextDark}\ignorespaces%
+}
+\setbeamertemplate{block end}{%
+  \end{mdframed}%
+}
+
+\setbeamertemplate{block alerted begin}{%
+  \begin{mdframed}[style=wbBlockBase,linecolor=UniRed]%
+    {\usebeamerfont{block title}\color{UniRed}\insertblocktitle\par}%
+    \vspace{0.18em}%
+    \usebeamerfont{block body}\color{TextDark}\ignorespaces%
+}
+\setbeamertemplate{block alerted end}{%
+  \end{mdframed}%
+}
+
+\setbeamertemplate{block example begin}{%
+  \begin{mdframed}[style=wbBlockBase,linecolor=MarineGray]%
+    {\usebeamerfont{block title}\color{MarineGray}\insertblocktitle\par}%
+    \vspace{0.18em}%
+    \usebeamerfont{block body}\color{TextDark}\ignorespaces%
+}
+\setbeamertemplate{block example end}{%
+  \end{mdframed}%
+}
+% ── Logo Config ───────────────────────────────────────────────────
+\newcommand{\WhartonLogoFile}{WhartonLogo.png}
+\newcommand{\SetWhartonLogoFile}[1]{\renewcommand{\WhartonLogoFile}{#1}}
+\newcommand{\WhartonLogoHeight}{0.75cm}
+\newcommand{\SetWhartonLogoHeight}[1]{\renewcommand{\WhartonLogoHeight}{#1}}
+
+% ── Frame Title ───────────────────────────────────────────────────
+% Minimal text-only title on white with thin UniRed underline.
+% Logo is placed separately at the top-right corner via background overlay
+% (see \addtobeamertemplate below) so it sits in the corner independent of
+% the title text length.
+% Fixed-height band (1.05cm) with title text vertically centred via \vss.
+% Red rule + logo are drawn via TikZ overlay against `current page` so they
+% share the exact horizontal extent as the footer's blue rule.
+\newcommand{\WhartonFrametitleBand}{1.05cm}
+\newlength{\WhartonRuleMargin}
+\setlength{\WhartonRuleMargin}{1.0cm}
+% Top offset for the frametitle area — pushes title text / logo / red rule
+% down by this much from the very top of the slide.
+\newlength{\WhartonFrametitleTopOffset}
+\setlength{\WhartonFrametitleTopOffset}{0.20cm}
+% Make body left/right margins match frametitle / rule / footer margins
+\setbeamersize{text margin left=1.0cm, text margin right=1.0cm}
+
+\setbeamertemplate{frametitle}{%
+  \nointerlineskip%
+  \vspace*{\WhartonFrametitleTopOffset}%
+  \vbox to \WhartonFrametitleBand{%
+    \vss%
+    % Beamer applies \leftskip=\beamer@leftmargin automatically; don't double-indent.
+    {\usebeamerfont{frametitle}\color{UniBlue}\raggedright\insertframetitle\par}%
+    \vss%
+  }%
+  \vspace{0.06cm}%
+}
+
+\addtobeamertemplate{frametitle}{}{%
+  \begin{tikzpicture}[remember picture, overlay]
+    % UniRed rule below the frametitle band (TikZ overlay = exact width)
+    \draw[UniRed, line width=1.2pt]
+      ([xshift=\WhartonRuleMargin,  yshift=-\WhartonFrametitleTopOffset-\WhartonFrametitleBand]current page.north west) --
+      ([xshift=-\WhartonRuleMargin, yshift=-\WhartonFrametitleTopOffset-\WhartonFrametitleBand]current page.north east);
+    % Logo — vertical centre matches the frametitle band centre.
+    \node[anchor=north east, inner sep=0pt,
+          xshift=-\WhartonRuleMargin,
+          yshift=-\WhartonFrametitleTopOffset-0.265cm]
+      at (current page.north east)
+      {\includegraphics[height=0.52cm]{\WhartonLogoFile}};
+  \end{tikzpicture}%
+}
+
+% Remove biblatex's "icon" before each bibliography entry
+\setbeamertemplate{bibliography item}{}
+
+% Unify bibliography entry colors — every part uses TextDark, no contrast
+\setbeamercolor*{bibliography entry author}{fg=TextDark}
+\setbeamercolor*{bibliography entry title}{fg=TextDark}
+\setbeamercolor*{bibliography entry location}{fg=TextDark}
+\setbeamercolor*{bibliography entry note}{fg=TextDark}
+
+% ── Footer (content slides) ───────────────────────────────────────
+% White bg, dark text, UniRed top rule, thin DividerGray segment rules
+\newcommand{\WhartonFooterLeftText}{\insertshortauthor}
+\newcommand{\SetWhartonFooterLeftText}[1]{\renewcommand{\WhartonFooterLeftText}{#1}}
+\newcommand{\WhartonTitleInstituteLine}{}
+\newcommand{\SetWhartonTitleInstituteLine}[1]{\renewcommand{\WhartonTitleInstituteLine}{#1}}
+
+\setbeamertemplate{footline}{%
+  \leavevmode%
+  \vbox{%
+    \vskip 0.32cm% reserve space where the TikZ-drawn blue rule will sit
+    % Three equal-width slots so the short title sits at the exact page centre
+    \hbox to \paperwidth{%
+      \hspace*{\WhartonRuleMargin}%
+      \makebox[\dimexpr(\paperwidth-2\WhartonRuleMargin)/3\relax][l]{%
+        \usebeamerfont{footline}\color{UniBlue}\WhartonFooterLeftText}%
+      \makebox[\dimexpr(\paperwidth-2\WhartonRuleMargin)/3\relax][c]{%
+        \usebeamerfont{footline}\color{UniBlue}\insertshorttitle}%
+      \makebox[\dimexpr(\paperwidth-2\WhartonRuleMargin)/3\relax][r]{%
+        \usebeamerfont{footline}\color{UniBlue}\insertframenumber\,/\,\inserttotalframenumber}%
+      \hspace*{\WhartonRuleMargin}%
+    }%
+    \vskip 0.22cm%
+  }%
+}
+
+% Blue separator rule above the footer text — TikZ overlay → matches red rule.
+\addtobeamertemplate{footline}{}{%
+  \begin{tikzpicture}[remember picture, overlay]
+    \draw[UniBlue, line width=0.8pt]
+      ([xshift=\WhartonRuleMargin,  yshift=0.55cm]current page.south west) --
+      ([xshift=-\WhartonRuleMargin, yshift=0.55cm]current page.south east);
+  \end{tikzpicture}%
+}
+
+% ── Institute Helper ──────────────────────────────────────────────
+\makeatletter
+\newcommand{\WhartonMaybeInstitute}{%
+  \if\relax\detokenize\expandafter{\WhartonTitleInstituteLine}\relax
+    \ifx\insertinstitute\@empty\else
+      \vspace{0.22em}{\small\color{TextMid}\insertinstitute\par}%
+    \fi
+  \else
+    \vspace{0.22em}{\small\color{TextMid}\WhartonTitleInstituteLine\par}%
+  \fi
+}
+
+% Title-page subtitle helper — collapses to nothing if no \subtitle{} is set,
+% so the decorative rule + empty subtitle line don't leave a stray gap.
+\newcommand{\WhartonMaybeSubtitle}{%
+  \ifx\beamer@subtitle\@empty\else
+    \vspace{0.55em}%
+    {\color{white}\rule{2.0cm}{1.4pt}\par}%
+    \vspace{0.55em}%
+    {\fontsize{13.5}{17}\selectfont\color{TitleSecondary}\insertsubtitle\par}%
+  \fi
+}
+
+% ── Author+institute block helpers (for multi-author title pages) ─
+% When set, this overrides the default \insertauthor + \insertinstitute
+% rendering on the title page, so author/affiliation can be paired up
+% in matching columns instead of two unrelated lines.
+\newcommand{\WhartonAuthorBlock}{}
+\newcommand{\SetWhartonAuthorBlock}[1]{\renewcommand{\WhartonAuthorBlock}{#1}}
+
+% Convenience macros for multi-author title pages.
+% Two authors:
+%   \SetWhartonAuthorPair{Alice Smith}{University of Pennsylvania}%
+%                        {Bob Jones}{MIT}
+\newcommand{\SetWhartonAuthorPair}[4]{%
+  \SetWhartonAuthorBlock{%
+    \begin{tabular}[t]{@{}l@{\hspace{2.4em}}l@{}}
+      {\fontsize{13}{16}\selectfont\bfseries\color{white}#1} &
+        {\fontsize{13}{16}\selectfont\bfseries\color{white}#3} \\[0.45em]
+      {\fontsize{10.5}{13.5}\selectfont\color{TitleSecondary}#2} &
+        {\fontsize{10.5}{13.5}\selectfont\color{TitleSecondary}#4}%
+    \end{tabular}%
+  }%
+}
+
+% Three authors:
+%   \SetWhartonAuthorTriple{n1}{i1}{n2}{i2}{n3}{i3}
+\newcommand{\SetWhartonAuthorTriple}[6]{%
+  \SetWhartonAuthorBlock{%
+    \begin{tabular}[t]{@{}l@{\hspace{2em}}l@{\hspace{2em}}l@{}}
+      {\fontsize{13}{16}\selectfont\bfseries\color{white}#1} &
+        {\fontsize{13}{16}\selectfont\bfseries\color{white}#3} &
+        {\fontsize{13}{16}\selectfont\bfseries\color{white}#5} \\[0.45em]
+      {\fontsize{10.5}{13.5}\selectfont\color{TitleSecondary}#2} &
+        {\fontsize{10.5}{13.5}\selectfont\color{TitleSecondary}#4} &
+        {\fontsize{10.5}{13.5}\selectfont\color{TitleSecondary}#6}%
+    \end{tabular}%
+  }%
+}
+
+% Four+ authors: use \SetWhartonAuthorBlock directly with a custom tabular,
+% e.g.
+%   \SetWhartonAuthorBlock{%
+%     \begin{tabular}[t]{@{}llll@{}}
+%       \fontsize{13}{16}\selectfont\bfseries\color{white}A & B & C & D \\
+%       \fontsize{10.5}{13.5}\selectfont\color{TitleSecondary}I_1 & I_2 & I_3 & I_4
+%     \end{tabular}%
+%   }
+
+% Internal: render either the custom WhartonAuthorBlock or the default
+% \insertauthor + \insertinstitute pair.
+\newcommand{\WhartonRenderAuthorInstitute}{%
+  \if\relax\detokenize\expandafter{\WhartonAuthorBlock}\relax
+    {\fontsize{13}{16}\selectfont\bfseries\color{white}\insertauthor\par}%
+    \vspace{0.30em}%
+    {\fontsize{10.5}{13.5}\selectfont\color{TitleSecondary}\insertinstitute\par}%
+  \else
+    \WhartonAuthorBlock\par%
+  \fi
+}
+\makeatother
+
+% ── Title Frame (full-bleed UniBlue, white type, UniRed bottom rule) ──
+% Title sits in the upper third; author block anchored toward the bottom
+% with comfortable clearance above the red rule.
+\newcommand{\WhartonTitleFrame}{%
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+
+  %% Full-bleed UniBlue background
+  \fill[UniBlue] (current page.south west) rectangle (current page.north east);
+
+  %% Thin UniRed rule at the very bottom
+  \fill[UniRed]
+    (current page.south west)
+    rectangle ([yshift=0.16cm]current page.south east);
+
+  %% Logo top-right on a small white "notch" (PNG has a white background)
+  \fill[white]
+    ([xshift=-1.20cm]current page.north east)
+    rectangle (current page.north east);
+  \node[anchor=north east, xshift=-0.35cm, yshift=-0.05cm]
+    at (current page.north east)
+    {\includegraphics[height=0.55cm]{\WhartonLogoFile}};
+
+\end{tikzpicture}
+
+\vspace*{1.30cm}
+% align title-page content with body (1.0cm via text margin); no extra hspace
+\begin{minipage}[t][6.0cm][t]{\textwidth}
+  \raggedright
+  {\fontsize{24}{29}\selectfont\bfseries\color{white}\inserttitle\par}
+  \WhartonMaybeSubtitle
+  \vfill
+  \WhartonRenderAuthorInstitute
+  \vspace{0.40em}
+  {\fontsize{10.5}{13.5}\selectfont\color{TitleSecondary}\insertdate\par}
+\end{minipage}
+\end{frame}%
+}
+
+% ── End Frame (full-bleed UniBlue, white "Thank you") ────────────
+\newcommand{\WhartonEndFrame}[1][Thank you]{%
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+
+  \fill[UniBlue] (current page.south west) rectangle (current page.north east);
+
+  \fill[UniRed]
+    (current page.south west)
+    rectangle ([yshift=0.16cm]current page.south east);
+
+  \fill[white]
+    ([xshift=-1.20cm]current page.north east)
+    rectangle (current page.north east);
+  \node[anchor=north east, xshift=-0.35cm, yshift=-0.05cm]
+    at (current page.north east)
+    {\includegraphics[height=0.55cm]{\WhartonLogoFile}};
+
+  \node[anchor=center] at (current page.center)
+    {{\color{white}\fontsize{40}{48}\selectfont\bfseries #1}};
+
+\end{tikzpicture}
+\end{frame}%
+}
+
+% ── Section Divider Frame ─────────────────────────────────────────
+% Auto-rendered at the start of each \section{} via \AtBeginSection.
+% Full-bleed UniBlue with the section number in TitleSecondary above the
+% section name in big white. Echoes the title/end frame language but
+% lighter (no decorative rule under the title).
+\newcommand{\WhartonSectionFrame}{%
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[UniBlue] (current page.south west) rectangle (current page.north east);
+  \fill[UniRed]
+    (current page.south west)
+    rectangle ([yshift=0.16cm]current page.south east);
+  \fill[white]
+    ([xshift=-1.20cm]current page.north east)
+    rectangle (current page.north east);
+  \node[anchor=north east, inner sep=0pt, xshift=-0.35cm, yshift=-0.05cm]
+    at (current page.north east)
+    {\includegraphics[height=0.55cm]{\WhartonLogoFile}};
+  % Section number + rule + section name, centred via TikZ on the slide
+  \node[anchor=west, text width=\dimexpr\paperwidth-2cm\relax,
+        inner sep=0pt]
+    at ([xshift=1.0cm]current page.center -| current page.west) {%
+      \raggedright
+      {\fontsize{16}{20}\selectfont\color{TitleSecondary}\thesection\par}%
+      \vspace{0.35em}%
+      {\color{TitleSecondary}\rule{2.0cm}{1.4pt}\par}%
+      \vspace{0.55em}%
+      {\fontsize{30}{36}\selectfont\bfseries\color{white}\insertsection\par}%
+    };
+\end{tikzpicture}
+\end{frame}%
+}
+
+% \WhartonSectionFrame is opt-in. To auto-render a section divider before
+% every \section{...}, add this in main.tex's preamble:
+%   \AtBeginSection[]{\WhartonSectionFrame}
+% Or call \WhartonSectionFrame manually whenever you want a divider.
+
+% ── Backup / Appendix Helper ─────────────────────────────────────
+% Calls \appendix (which appendixnumberbeamer uses to reset the frame counter
+% and exclude backup slides from the main page count), then emits an "Appendix"
+% section divider so the audience knows the main talk is over.
+\newcommand{\WhartonBackupBegin}[1][Appendix]{%
+  \appendix%
+  % Suppress the auto section divider for this manual one
+  \begingroup\let\WhartonSectionFrame\relax%
+  \begin{frame}[plain]
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[UniBlue] (current page.south west) rectangle (current page.north east);
+    \fill[UniRed]
+      (current page.south west)
+      rectangle ([yshift=0.16cm]current page.south east);
+    \fill[white]
+      ([xshift=-1.20cm]current page.north east)
+      rectangle (current page.north east);
+    \node[anchor=north east, inner sep=0pt, xshift=-0.35cm, yshift=-0.05cm]
+      at (current page.north east)
+      {\includegraphics[height=0.55cm]{\WhartonLogoFile}};
+    \node[anchor=center] at (current page.center)
+      {{\color{white}\fontsize{36}{42}\selectfont\bfseries #1}};
+  \end{tikzpicture}
+  \end{frame}%
+  \endgroup%
+}
+
+\mode<all>
