@@ -24,7 +24,7 @@ All data come from the authors' replication package. It is part of the Supplemen
 
 1. Open `paper-replication-zhu-ms-2026.Rproj` in RStudio. This sets the working directory to the repository root.
 2. Run `code/install_packages.R` once. It installs `data.table`, `lfe`, `R.utils` and `rmarkdown` if they are missing.
-3. Open an `.Rmd` file in `code/` and click Knit. Each document runs on its own, writes its results to `results/` and shows the table in an HTML report next to the `.Rmd` file. The setup chunk of each document sets the working directory to the repository root, so the chunks can also be run one by one.
+3. Open an `.Rmd` file in `code/` and click Knit. Each document runs on its own and writes its results to `results/`. The setup chunk of each document sets the working directory to the repository root, so the chunks can also be run one by one.
 
 From a terminal, run in the repository root:
 
@@ -46,8 +46,6 @@ The documents were knitted with R 4.6.1, data.table 1.18.6.1, lfe 3.1.1, R.utils
 | `code/replication_table2.Rmd` | `results/replication_table2/` | Table 2 |
 | `code/replication_table3.Rmd` | `results/replication_table3/` | Table 3 |
 | `code/replication_table4.Rmd` | `results/replication_table4/` | Table 4, columns (3) and (4) |
-
-Knitting also writes an HTML report next to each `.Rmd` file, such as `code/replication_table2.html`. The reports are not tracked by git; the tables are saved in `results/`.
 
 ## License
 
